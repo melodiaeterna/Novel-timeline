@@ -3,51 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novela Timeline - Dark Mode</title>
+    <title>Novela Timeline - Dark</title>
     <style>
-        /* CSS MODO OSCURO */
-        body { font-family: 'Segoe UI', sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; background-color: #1a1a1b; color: #d7dadc; }
-        .seccion { background: #272729; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); margin-bottom: 20px; border: 1px solid #343435; }
-        h2, h3 { color: #ffffff; border-bottom: 1px solid #343435; padding-bottom: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; max-width: 850px; margin: 40px auto; padding: 20px; background-color: #1a1a1b; color: #d7dadc; }
+        .seccion { background: #272729; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); margin-bottom: 20px; border: 1px solid #343435; }
+        h2, h3 { color: #ffffff; border-bottom: 1px solid #343435; padding-bottom: 10px; margin-top: 0; }
         
-        input, select { padding: 10px; margin: 10px 0; border: 1px solid #343435; border-radius: 6px; width: 100%; box-sizing: border-box; background: #1a1a1b; color: white; }
+        input[type="text"], input[type="date"], select { padding: 12px; margin: 10px 0; border: 1px solid #343435; border-radius: 6px; width: 100%; box-sizing: border-box; background: #1a1a1b; color: white; font-size: 1rem; }
         .flex { display: flex; gap: 10px; align-items: center; }
         
-        button { background-color: #d93a00; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
-        button:hover { opacity: 0.8; }
+        button { background-color: #d93a00; color: white; border: none; padding: 14px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; font-size: 1rem; }
+        button:hover { filter: brightness(1.2); }
         button.btn-azul { background-color: #0079d3; }
-        button.btn-editar { background-color: #4a4a4b; width: auto; padding: 5px 10px; font-size: 0.8em; margin-left: 10px; }
+        button.btn-editar { background-color: #4a4a4b; width: auto; padding: 6px 12px; font-size: 0.85em; }
 
-        .badge { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 5px; border: 1px solid #000; }
+        /* Clasificaciones y Checks */
+        .lista-checks { display: flex; flex-wrap: wrap; gap: 15px; margin: 15px 0; background: #1a1a1b; padding: 15px; border-radius: 8px; border: 1px solid #343435; }
+        .check-item { display: flex; align-items: center; gap: 8px; font-size: 1.1rem; cursor: pointer; }
+        input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; }
+
+        /* Poderes */
+        .poder-tag { padding: 4px 10px; border-radius: 4px; font-size: 0.8em; font-weight: bold; color: #000; text-transform: uppercase; margin-left: 10px; }
+        .badge { display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 6px; border: 1px dotted #fff; }
+        
         .personaje-item { background: #272729; padding: 15px; border-bottom: 1px solid #343435; display: flex; justify-content: space-between; align-items: center; }
-        .lista-checks { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; font-size: 0.9em; background: #1a1a1b; padding: 10px; border-radius: 6px; }
+        .info-p { display: flex; align-items: center; gap: 10px; }
     </style>
 </head>
 <body>
 
-    <h1>Cronología (Modo Edición)</h1>
+    <h1>Cronología de Novela</h1>
 
     <div class="seccion">
-        <h3>1. Clasificaciones (Equipos)</h3>
+        <h3>1. Gestionar Clasificaciones</h3>
         <div class="flex">
-            <input type="text" id="nombreClas" placeholder="Nombre equipo">
-            <input type="color" id="colorClas" value="#ff4500" style="width: 80px; height: 40px;">
-            <button class="btn-azul" onclick="agregarClasificacion()">Añadir</button>
+            <input type="text" id="nombreClas" placeholder="Nombre (ej: Realeza, Espías...)">
+            <input type="color" id="colorClas" value="#ff4500" style="width: 100px; height: 45px; background: none; border:none;">
+            <button class="btn-azul" onclick="agregarClasificacion()">Crear Clasificación</button>
         </div>
         <div id="verClasificaciones" class="lista-checks"></div>
     </div>
 
     <div class="seccion">
-        <h3 id="tituloFormP">2. Añadir Personaje</h3>
-        <input type="hidden" id="editIndex" value="-1"> <input type="text" id="nombreP" placeholder="Nombre del Personaje">
+        <h3 id="tituloFormP">2. Registro de Personaje</h3>
+        <input type="hidden" id="editIndex" value="-1">
+        
+        <input type="text" id="nombreP" placeholder="Nombre completo">
         <label>Fecha de Nacimiento:</label>
         <input type="date" id="fechaP">
         
-        <p>Equipos:</p>
+        <p><strong>Clasificaciones:</strong></p>
         <div id="checksClasificaciones" class="lista-checks"></div>
+
+        <p><strong>Estado de Poder:</strong></p>
+        <div class="lista-checks">
+            <label class="check-item"><input type="radio" name="poderP" value="tiene" style="accent-color: #2ecc71"> Con Poder</label>
+            <label class="check-item"><input type="radio" name="poderP" value="no" style="accent-color: #e67e22"> Sin Poder</label>
+            <label class="check-item"><input type="radio" name="poderP" value="indefinido" checked style="accent-color: #ffffff"> Indefinido</label>
+        </div>
         
         <button id="btnGuardarP" onclick="guardarPersonaje()">Guardar Personaje</button>
-        <button id="btnCancelar" style="display:none; margin-top:5px; background:#444;" onclick="cancelarEdicion()">Cancelar Edición</button>
+        <button id="btnCancelar" style="display:none; margin-top:8px; background:#444;" onclick="cancelarEdicion()">Descartar Cambios</button>
     </div>
 
     <div class="seccion">
@@ -67,7 +83,7 @@
             localStorage.setItem('nt_clas', JSON.stringify(clas));
             document.getElementById('nombreClas').value = "";
             mostrarClasificaciones();
-            mostrarPersonajes(); // Refrescar por si cambian colores
+            mostrarPersonajes();
         }
 
         function mostrarClasificaciones() {
@@ -77,7 +93,7 @@
             divVer.innerHTML = ""; divChecks.innerHTML = "";
             clas.forEach(c => {
                 divVer.innerHTML += `<span><span class="badge" style="background:${c.color}"></span>${c.nombre}</span>`;
-                divChecks.innerHTML += `<label><input type="checkbox" name="clasP" value="${c.id}"> ${c.nombre}</label>`;
+                divChecks.innerHTML += `<label class="check-item"><input type="checkbox" name="clasP" value="${c.id}"> ${c.nombre}</label>`;
             });
         }
 
@@ -86,15 +102,19 @@
             const fecha = document.getElementById('fechaP').value;
             const editIndex = parseInt(document.getElementById('editIndex').value);
             const checks = document.querySelectorAll('input[name="clasP"]:checked');
-            if(!nombre || !fecha) return alert("Faltan datos");
+            const poder = document.querySelector('input[name="poderP"]:checked').value;
+            
+            if(!nombre || !fecha) return alert("Por favor, introduce nombre y fecha.");
 
             const idsClas = Array.from(checks).map(cb => cb.value);
             let personajes = JSON.parse(localStorage.getItem('nt_pers')) || [];
 
+            const datosPersonaje = { nombre, fecha, clasIds: idsClas, poder };
+
             if(editIndex === -1) {
-                personajes.push({ nombre, fecha, clasIds: idsClas });
+                personajes.push(datosPersonaje);
             } else {
-                personajes[editIndex] = { nombre, fecha, clasIds: idsClas };
+                personajes[editIndex] = datosPersonaje;
             }
 
             localStorage.setItem('nt_pers', JSON.stringify(personajes));
@@ -110,12 +130,15 @@
             document.getElementById('fechaP').value = p.fecha;
             document.getElementById('editIndex').value = index;
             
-            // Marcar los checks que ya tenía
+            // Checks de Clasificación
             const checks = document.querySelectorAll('input[name="clasP"]');
             checks.forEach(cb => cb.checked = p.clasIds.includes(cb.value));
 
-            document.getElementById('tituloFormP').innerText = "Editando a: " + p.nombre;
-            document.getElementById('btnGuardarP').innerText = "Actualizar Cambios";
+            // Radio de Poder
+            document.querySelector(`input[name="poderP"][value="${p.poder || 'indefinido'}"]`).checked = true;
+
+            document.getElementById('tituloFormP').innerText = "Editando: " + p.nombre;
+            document.getElementById('btnGuardarP').innerText = "Actualizar Personaje";
             document.getElementById('btnCancelar').style.display = "block";
         }
 
@@ -123,11 +146,17 @@
             document.getElementById('editIndex').value = "-1";
             document.getElementById('nombreP').value = "";
             document.getElementById('fechaP').value = "";
-            document.getElementById('tituloFormP').innerText = "2. Añadir Personaje";
+            document.getElementById('tituloFormP').innerText = "2. Registro de Personaje";
             document.getElementById('btnGuardarP').innerText = "Guardar Personaje";
             document.getElementById('btnCancelar').style.display = "none";
-            const checks = document.querySelectorAll('input[name="clasP"]');
-            checks.forEach(cb => cb.checked = false);
+            document.querySelectorAll('input[name="clasP"]').forEach(cb => cb.checked = false);
+            document.querySelector('input[name="poderP"][value="indefinido"]').checked = true;
+        }
+
+        function getPoderTag(poder) {
+            if(poder === 'tiene') return '<span class="poder-tag" style="background:#2ecc71">Con Poder</span>';
+            if(poder === 'no') return '<span class="poder-tag" style="background:#e67e22">Sin Poder</span>';
+            return '<span class="poder-tag" style="background:#ffffff">Indefinido</span>';
         }
 
         function mostrarPersonajes() {
@@ -146,8 +175,17 @@
                 const [y, m, d] = p.fecha.split('-');
                 contenedor.innerHTML += `
                     <div class="personaje-item">
-                        <div>${badgesHtml} <strong>${p.nombre}</strong> <br> <small>Nacimiento: ${d}-${m}-${y}</small></div>
-                        <button class="btn-editar" onclick="editarPersonaje(${index})">Editar</button>
+                        <div class="info-p">
+                            <div>${badgesHtml}</div>
+                            <div>
+                                <strong>${p.nombre}</strong> <br>
+                                <small>Nace: ${d}-${m}-${y}</small>
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:center;">
+                            ${getPoderTag(p.poder)}
+                            <button class="btn-editar" onclick="editarPersonaje(${index})" style="margin-left:15px;">Editar</button>
+                        </div>
                     </div>
                 `;
             });
