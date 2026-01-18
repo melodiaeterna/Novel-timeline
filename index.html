@@ -3,134 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novela Timeline - Pro</title>
+    <title>Novela Timeline - Dark Mode</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; background-color: #f0f2f5; }
-        .seccion { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h2, h3 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        input, select { padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; width: 100%; box-sizing: border-box; }
+        /* CSS MODO OSCURO */
+        body { font-family: 'Segoe UI', sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; background-color: #1a1a1b; color: #d7dadc; }
+        .seccion { background: #272729; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); margin-bottom: 20px; border: 1px solid #343435; }
+        h2, h3 { color: #ffffff; border-bottom: 1px solid #343435; padding-bottom: 10px; }
+        
+        input, select { padding: 10px; margin: 10px 0; border: 1px solid #343435; border-radius: 6px; width: 100%; box-sizing: border-box; background: #1a1a1b; color: white; }
         .flex { display: flex; gap: 10px; align-items: center; }
-        button { background-color: #28a745; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
-        button.btn-azul { background-color: #007bff; }
-        .badge { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 5px; border: 1px solid #0003; }
-        .personaje-item { background: #fff; padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
-        .lista-checks { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; font-size: 0.9em; }
+        
+        button { background-color: #d93a00; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
+        button:hover { opacity: 0.8; }
+        button.btn-azul { background-color: #0079d3; }
+        button.btn-editar { background-color: #4a4a4b; width: auto; padding: 5px 10px; font-size: 0.8em; margin-left: 10px; }
+
+        .badge { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 5px; border: 1px solid #000; }
+        .personaje-item { background: #272729; padding: 15px; border-bottom: 1px solid #343435; display: flex; justify-content: space-between; align-items: center; }
+        .lista-checks { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; font-size: 0.9em; background: #1a1a1b; padding: 10px; border-radius: 6px; }
     </style>
 </head>
 <body>
 
-    <h1>Cronología: Panel de Control</h1>
+    <h1>Cronología (Modo Edición)</h1>
 
     <div class="seccion">
-        <h3>1. Crear Clasificaciones (Equipos)</h3>
+        <h3>1. Clasificaciones (Equipos)</h3>
         <div class="flex">
-            <input type="text" id="nombreClas" placeholder="Nombre (ej: Magos)">
-            <input type="color" id="colorClas" style="width: 80px; padding: 2px;">
+            <input type="text" id="nombreClas" placeholder="Nombre equipo">
+            <input type="color" id="colorClas" value="#ff4500" style="width: 80px; height: 40px;">
             <button class="btn-azul" onclick="agregarClasificacion()">Añadir</button>
         </div>
         <div id="verClasificaciones" class="lista-checks"></div>
     </div>
 
     <div class="seccion">
-        <h3>2. Añadir Personaje</h3>
-        <input type="text" id="nombreP" placeholder="Nombre del Personaje">
+        <h3 id="tituloFormP">2. Añadir Personaje</h3>
+        <input type="hidden" id="editIndex" value="-1"> <input type="text" id="nombreP" placeholder="Nombre del Personaje">
         <label>Fecha de Nacimiento:</label>
         <input type="date" id="fechaP">
         
-        <p>Asignar Clasificaciones:</p>
+        <p>Equipos:</p>
         <div id="checksClasificaciones" class="lista-checks"></div>
         
-        <button onclick="agregarPersonaje()">Guardar Personaje</button>
+        <button id="btnGuardarP" onclick="guardarPersonaje()">Guardar Personaje</button>
+        <button id="btnCancelar" style="display:none; margin-top:5px; background:#444;" onclick="cancelarEdicion()">Cancelar Edición</button>
     </div>
 
     <div class="seccion">
-        <h3>Personajes y sus Equipos</h3>
+        <h3>Lista de Personajes</h3>
         <div id="listaPersonajes"></div>
     </div>
 
     <script>
-        window.onload = function() {
-            mostrarClasificaciones();
-            mostrarPersonajes();
-        };
+        window.onload = function() { mostrarClasificaciones(); mostrarPersonajes(); };
 
-        // --- LÓGICA DE CLASIFICACIONES ---
         function agregarClasificacion() {
             const nombre = document.getElementById('nombreClas').value;
             const color = document.getElementById('colorClas').value;
             if(!nombre) return;
-
-            let clasificaciones = JSON.parse(localStorage.getItem('nt_clas')) || [];
-            clasificaciones.push({ id: Date.now(), nombre, color });
-            localStorage.setItem('nt_clas', JSON.stringify(clasificaciones));
-            
+            let clas = JSON.parse(localStorage.getItem('nt_clas')) || [];
+            clas.push({ id: Date.now(), nombre, color });
+            localStorage.setItem('nt_clas', JSON.stringify(clas));
             document.getElementById('nombreClas').value = "";
             mostrarClasificaciones();
+            mostrarPersonajes(); // Refrescar por si cambian colores
         }
 
         function mostrarClasificaciones() {
             const divVer = document.getElementById('verClasificaciones');
             const divChecks = document.getElementById('checksClasificaciones');
             let clas = JSON.parse(localStorage.getItem('nt_clas')) || [];
-
-            divVer.innerHTML = "";
-            divChecks.innerHTML = "";
-
+            divVer.innerHTML = ""; divChecks.innerHTML = "";
             clas.forEach(c => {
-                divVer.innerHTML += `<span title="${c.nombre}"><span class="badge" style="background:${c.color}"></span>${c.nombre}</span>`;
-                divChecks.innerHTML += `
-                    <label>
-                        <input type="checkbox" name="clasP" value="${c.id}"> ${c.nombre}
-                    </label>
-                `;
+                divVer.innerHTML += `<span><span class="badge" style="background:${c.color}"></span>${c.nombre}</span>`;
+                divChecks.innerHTML += `<label><input type="checkbox" name="clasP" value="${c.id}"> ${c.nombre}</label>`;
             });
         }
 
-        // --- LÓGICA DE PERSONAJES ---
-        function agregarPersonaje() {
+        function guardarPersonaje() {
             const nombre = document.getElementById('nombreP').value;
             const fecha = document.getElementById('fechaP').value;
+            const editIndex = parseInt(document.getElementById('editIndex').value);
             const checks = document.querySelectorAll('input[name="clasP"]:checked');
-            
             if(!nombre || !fecha) return alert("Faltan datos");
 
             const idsClas = Array.from(checks).map(cb => cb.value);
-
             let personajes = JSON.parse(localStorage.getItem('nt_pers')) || [];
-            personajes.push({ nombre, fecha, clasIds: idsClas });
-            localStorage.setItem('nt_pers', JSON.stringify(personajes));
 
-            // Resetear formulario
-            document.getElementById('nombreP').value = "";
+            if(editIndex === -1) {
+                personajes.push({ nombre, fecha, clasIds: idsClas });
+            } else {
+                personajes[editIndex] = { nombre, fecha, clasIds: idsClas };
+            }
+
+            localStorage.setItem('nt_pers', JSON.stringify(personajes));
+            cancelarEdicion();
             mostrarPersonajes();
         }
 
-        function formatearFecha(fechaStr) {
-            const [y, m, d] = fechaStr.split('-');
-            return `${d}-${m}-${y}`; // Formato Día-Mes-Año
+        function editarPersonaje(index) {
+            let personajes = JSON.parse(localStorage.getItem('nt_pers')) || [];
+            const p = personajes[index];
+            
+            document.getElementById('nombreP').value = p.nombre;
+            document.getElementById('fechaP').value = p.fecha;
+            document.getElementById('editIndex').value = index;
+            
+            // Marcar los checks que ya tenía
+            const checks = document.querySelectorAll('input[name="clasP"]');
+            checks.forEach(cb => cb.checked = p.clasIds.includes(cb.value));
+
+            document.getElementById('tituloFormP').innerText = "Editando a: " + p.nombre;
+            document.getElementById('btnGuardarP').innerText = "Actualizar Cambios";
+            document.getElementById('btnCancelar').style.display = "block";
+        }
+
+        function cancelarEdicion() {
+            document.getElementById('editIndex').value = "-1";
+            document.getElementById('nombreP').value = "";
+            document.getElementById('fechaP').value = "";
+            document.getElementById('tituloFormP').innerText = "2. Añadir Personaje";
+            document.getElementById('btnGuardarP').innerText = "Guardar Personaje";
+            document.getElementById('btnCancelar').style.display = "none";
+            const checks = document.querySelectorAll('input[name="clasP"]');
+            checks.forEach(cb => cb.checked = false);
         }
 
         function mostrarPersonajes() {
             const contenedor = document.getElementById('listaPersonajes');
             let personajes = JSON.parse(localStorage.getItem('nt_pers')) || [];
             let clas = JSON.parse(localStorage.getItem('nt_clas')) || [];
+            contenedor.innerHTML = "";
 
-            contenedor.innerHTML = personajes.length ? "" : "No hay personajes.";
-
-            personajes.forEach(p => {
-                // Buscar los colores de sus clasificaciones
+            personajes.forEach((p, index) => {
                 let badgesHtml = "";
                 p.clasIds.forEach(id => {
                     const c = clas.find(item => item.id == id);
-                    if(c) badgesHtml += `<span class="badge" title="${c.nombre}" style="background:${c.color}"></span>`;
+                    if(c) badgesHtml += `<span class="badge" style="background:${c.color}"></span>`;
                 });
 
+                const [y, m, d] = p.fecha.split('-');
                 contenedor.innerHTML += `
                     <div class="personaje-item">
-                        <div>
-                            ${badgesHtml} <strong>${p.nombre}</strong>
-                        </div>
-                        <div>Nació el: ${formatearFecha(p.fecha)}</div>
+                        <div>${badgesHtml} <strong>${p.nombre}</strong> <br> <small>Nacimiento: ${d}-${m}-${y}</small></div>
+                        <button class="btn-editar" onclick="editarPersonaje(${index})">Editar</button>
                     </div>
                 `;
             });
