@@ -1,12 +1,82 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Mi Novela - Cronología</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novela Timeline - Administrador</title>
+    <style>
+        /* Diseño básico para que no se vea aburrido */
+        body { font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background-color: #f8f9fa; }
+        .seccion { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h1, h3 { color: #2c3e50; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; background-color: #007bff; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #0056b3; }
+        .personaje-item { background: #fff; padding: 10px; border-bottom: 1px dashed #ddd; }
+    </style>
 </head>
 <body>
-    <h1>Bienvenido a la Línea de Tiempo</h1>
-    <p>Esta página pronto mostrará los eventos de mi historia.</p>
-    
-    <div id="contenedor-personajes"></div>
+
+    <h1>Gestor de la Novela</h1>
+
+    <div class="seccion">
+        <h3>Añadir Personaje</h3>
+        <input type="text" id="nombreP" placeholder="Nombre (ej: Elora)">
+        <input type="date" id="fechaP">
+        <button onclick="agregarPersonaje()">Guardar en este Navegador</button>
+    </div>
+
+    <div class="seccion">
+        <h3>Personajes Registrados</h3>
+        <div id="listaPersonajes">
+            <p style="color: grey;">Aún no has añadido personajes.</p>
+        </div>
+    </div>
+
+    <script>
+        // Esta función se ejecuta sola al abrir la página
+        window.onload = mostrarPersonajes;
+
+        function agregarPersonaje() {
+            const nombre = document.getElementById('nombreP').value;
+            const fecha = document.getElementById('fechaP').value;
+
+            if (!nombre || !fecha) {
+                alert("Por favor, rellena el nombre y la fecha.");
+                return;
+            }
+
+            // 1. Obtener los personajes que ya existan en la memoria del navegador
+            let personajes = JSON.parse(localStorage.getItem('mis_personajes')) || [];
+
+            // 2. Añadir el nuevo personaje al grupo
+            personajes.push({ nombre, fecha });
+
+            // 3. Guardar el grupo actualizado en el navegador
+            localStorage.setItem('mis_personajes', JSON.stringify(personajes));
+
+            // 4. Limpiar el formulario y refrescar la lista
+            document.getElementById('nombreP').value = "";
+            document.getElementById('fechaP').value = "";
+            mostrarPersonajes();
+        }
+
+        function mostrarPersonajes() {
+            const contenedor = document.getElementById('listaPersonajes');
+            let personajes = JSON.parse(localStorage.getItem('mis_personajes')) || [];
+
+            if (personajes.length === 0) return;
+
+            // Dibujar la lista
+            contenedor.innerHTML = ""; 
+            personajes.forEach(p => {
+                contenedor.innerHTML += `
+                    <div class="personaje-item">
+                        <strong>${p.nombre}</strong> - Nacimiento: ${p.fecha}
+                    </div>
+                `;
+            });
+        }
+    </script>
 </body>
 </html>
