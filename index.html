@@ -3,76 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novela Timeline - Administrador</title>
+    <title>Novela Timeline - Pro</title>
     <style>
-        /* Diseño básico para que no se vea aburrido */
-        body { font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background-color: #f8f9fa; }
+        body { font-family: 'Segoe UI', sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; background-color: #f0f2f5; }
         .seccion { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h1, h3 { color: #2c3e50; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; background-color: #007bff; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #0056b3; }
-        .personaje-item { background: #fff; padding: 10px; border-bottom: 1px dashed #ddd; }
+        h2, h3 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        input, select { padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; width: 100%; box-sizing: border-box; }
+        .flex { display: flex; gap: 10px; align-items: center; }
+        button { background-color: #28a745; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
+        button.btn-azul { background-color: #007bff; }
+        .badge { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 5px; border: 1px solid #0003; }
+        .personaje-item { background: #fff; padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
+        .lista-checks { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; font-size: 0.9em; }
     </style>
 </head>
 <body>
 
-    <h1>Gestor de la Novela</h1>
+    <h1>Cronología: Panel de Control</h1>
 
     <div class="seccion">
-        <h3>Añadir Personaje</h3>
-        <input type="text" id="nombreP" placeholder="Nombre (ej: Elora)">
-        <input type="date" id="fechaP">
-        <button onclick="agregarPersonaje()">Guardar en este Navegador</button>
+        <h3>1. Crear Clasificaciones (Equipos)</h3>
+        <div class="flex">
+            <input type="text" id="nombreClas" placeholder="Nombre (ej: Magos)">
+            <input type="color" id="colorClas" style="width: 80px; padding: 2px;">
+            <button class="btn-azul" onclick="agregarClasificacion()">Añadir</button>
+        </div>
+        <div id="verClasificaciones" class="lista-checks"></div>
     </div>
 
     <div class="seccion">
-        <h3>Personajes Registrados</h3>
-        <div id="listaPersonajes">
-            <p style="color: grey;">Aún no has añadido personajes.</p>
-        </div>
+        <h3>2. Añadir Personaje</h3>
+        <input type="text" id="nombreP" placeholder="Nombre del Personaje">
+        <label>Fecha de Nacimiento:</label>
+        <input type="date" id="fechaP">
+        
+        <p>Asignar Clasificaciones:</p>
+        <div id="checksClasificaciones" class="lista-checks"></div>
+        
+        <button onclick="agregarPersonaje()">Guardar Personaje</button>
+    </div>
+
+    <div class="seccion">
+        <h3>Personajes y sus Equipos</h3>
+        <div id="listaPersonajes"></div>
     </div>
 
     <script>
-        // Esta función se ejecuta sola al abrir la página
-        window.onload = mostrarPersonajes;
+        window.onload = function() {
+            mostrarClasificaciones();
+            mostrarPersonajes();
+        };
 
+        // --- LÓGICA DE CLASIFICACIONES ---
+        function agregarClasificacion() {
+            const nombre = document.getElementById('nombreClas').value;
+            const color = document.getElementById('colorClas').value;
+            if(!nombre) return;
+
+            let clasificaciones = JSON.parse(localStorage.getItem('nt_clas')) || [];
+            clasificaciones.push({ id: Date.now(), nombre, color });
+            localStorage.setItem('nt_clas', JSON.stringify(clasificaciones));
+            
+            document.getElementById('nombreClas').value = "";
+            mostrarClasificaciones();
+        }
+
+        function mostrarClasificaciones() {
+            const divVer = document.getElementById('verClasificaciones');
+            const divChecks = document.getElementById('checksClasificaciones');
+            let clas = JSON.parse(localStorage.getItem('nt_clas')) || [];
+
+            divVer.innerHTML = "";
+            divChecks.innerHTML = "";
+
+            clas.forEach(c => {
+                divVer.innerHTML += `<span title="${c.nombre}"><span class="badge" style="background:${c.color}"></span>${c.nombre}</span>`;
+                divChecks.innerHTML += `
+                    <label>
+                        <input type="checkbox" name="clasP" value="${c.id}"> ${c.nombre}
+                    </label>
+                `;
+            });
+        }
+
+        // --- LÓGICA DE PERSONAJES ---
         function agregarPersonaje() {
             const nombre = document.getElementById('nombreP').value;
             const fecha = document.getElementById('fechaP').value;
+            const checks = document.querySelectorAll('input[name="clasP"]:checked');
+            
+            if(!nombre || !fecha) return alert("Faltan datos");
 
-            if (!nombre || !fecha) {
-                alert("Por favor, rellena el nombre y la fecha.");
-                return;
-            }
+            const idsClas = Array.from(checks).map(cb => cb.value);
 
-            // 1. Obtener los personajes que ya existan en la memoria del navegador
-            let personajes = JSON.parse(localStorage.getItem('mis_personajes')) || [];
+            let personajes = JSON.parse(localStorage.getItem('nt_pers')) || [];
+            personajes.push({ nombre, fecha, clasIds: idsClas });
+            localStorage.setItem('nt_pers', JSON.stringify(personajes));
 
-            // 2. Añadir el nuevo personaje al grupo
-            personajes.push({ nombre, fecha });
-
-            // 3. Guardar el grupo actualizado en el navegador
-            localStorage.setItem('mis_personajes', JSON.stringify(personajes));
-
-            // 4. Limpiar el formulario y refrescar la lista
+            // Resetear formulario
             document.getElementById('nombreP').value = "";
-            document.getElementById('fechaP').value = "";
             mostrarPersonajes();
+        }
+
+        function formatearFecha(fechaStr) {
+            const [y, m, d] = fechaStr.split('-');
+            return `${d}-${m}-${y}`; // Formato Día-Mes-Año
         }
 
         function mostrarPersonajes() {
             const contenedor = document.getElementById('listaPersonajes');
-            let personajes = JSON.parse(localStorage.getItem('mis_personajes')) || [];
+            let personajes = JSON.parse(localStorage.getItem('nt_pers')) || [];
+            let clas = JSON.parse(localStorage.getItem('nt_clas')) || [];
 
-            if (personajes.length === 0) return;
+            contenedor.innerHTML = personajes.length ? "" : "No hay personajes.";
 
-            // Dibujar la lista
-            contenedor.innerHTML = ""; 
             personajes.forEach(p => {
+                // Buscar los colores de sus clasificaciones
+                let badgesHtml = "";
+                p.clasIds.forEach(id => {
+                    const c = clas.find(item => item.id == id);
+                    if(c) badgesHtml += `<span class="badge" title="${c.nombre}" style="background:${c.color}"></span>`;
+                });
+
                 contenedor.innerHTML += `
                     <div class="personaje-item">
-                        <strong>${p.nombre}</strong> - Nacimiento: ${p.fecha}
+                        <div>
+                            ${badgesHtml} <strong>${p.nombre}</strong>
+                        </div>
+                        <div>Nació el: ${formatearFecha(p.fecha)}</div>
                     </div>
                 `;
             });
