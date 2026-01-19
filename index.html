@@ -3,81 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novela Timeline - Eventos</title>
+    <title>Novela Manager - Pro</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; background-color: #1a1a1b; color: #d7dadc; }
-        .seccion { background: #272729; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); margin-bottom: 20px; border: 1px solid #343435; }
-        h3 { color: #ffffff; border-bottom: 1px solid #343435; padding-bottom: 10px; margin-top: 0; }
-        input[type="text"], input[type="date"], textarea { padding: 12px; margin: 10px 0; border: 1px solid #343435; border-radius: 6px; width: 100%; box-sizing: border-box; background: #1a1a1b; color: white; font-size: 1rem; }
+        :root { --bg-dark: #1a1a1b; --card-bg: #272729; --accent: #0079d3; --border: #343435; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; background-color: var(--bg-dark); color: #d7dadc; height: 100vh; overflow: hidden; }
         
-        button { background-color: #d93a00; color: white; border: none; padding: 14px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
-        button:hover { filter: brightness(1.2); }
-        button.btn-azul { background-color: #0079d3; margin-top: 10px; }
-        button.btn-editar { background-color: #4a4a4b; width: auto; padding: 6px 12px; font-size: 0.85em; }
+        /* MENÚ LATERAL */
+        nav { width: 220px; background: #000; padding: 20px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid var(--border); }
+        nav h2 { font-size: 1.2rem; color: var(--accent); margin-bottom: 20px; }
+        nav button { background: transparent; color: #ccc; border: none; padding: 12px; text-align: left; cursor: pointer; border-radius: 6px; font-weight: bold; transition: 0.3s; }
+        nav button:hover, nav button.active { background: var(--card-bg); color: white; }
 
-        .lista-checks { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; background: #1a1a1b; padding: 15px; border-radius: 8px; border: 1px solid #343435; }
-        .clas-check-label { display: flex; align-items: center; cursor: pointer; padding: 8px 14px; border-radius: 20px; border: 2px solid #343435; background: #272729; transition: 0.2s; }
-        .clas-check-label:has(input:checked) { border-color: #0079d3; background: #343435; }
-        .clas-check-label input { display: none; }
+        /* CONTENIDO PRINCIPAL */
+        main { flex: 1; padding: 40px; overflow-y: auto; }
+        .vista { display: none; }
+        .vista.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .seccion { background: var(--card-bg); padding: 25px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
+        input, textarea, select { padding: 12px; margin: 10px 0; border: 1px solid var(--border); border-radius: 6px; width: 100%; box-sizing: border-box; background: var(--bg-dark); color: white; font-size: 1rem; }
         
-        .color-circle { width: 16px; height: 16px; border-radius: 50%; margin-right: 10px; border: 1px solid #000; flex-shrink: 0; }
+        button.primary { background-color: var(--accent); color: white; border: none; padding: 14px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
+        button.btn-editar { background: #4a4a4b; width: auto; padding: 6px 12px; color: white; border: none; border-radius: 4px; cursor: pointer; }
 
-        /* Lista */
-        .personaje-item, .evento-item { background: #272729; padding: 15px; border-bottom: 1px solid #343435; display: flex; justify-content: space-between; align-items: center; }
-        .grid-badges { display: flex; gap: 8px; width: 120px; flex-shrink: 0; }
-        .badge-fixed { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.3); }
-        .badge-empty { background: transparent; border: none; }
-        .poder-tag { padding: 6px 12px; border-radius: 4px; font-size: 0.75em; font-weight: bold; color: #000; min-width: 100px; text-align: center; }
+        /* LISTAS Y BADGES */
+        .personaje-item, .evento-item { background: var(--card-bg); padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .grid-badges { display: flex; gap: 6px; width: 100px; flex-shrink: 0; }
+        .badge-fixed { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); }
+        .poder-tag { padding: 4px 12px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; color: #000; min-width: 90px; text-align: center; }
+        
+        .selector-personajes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: var(--bg-dark); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
+        .check-item { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        input[type="checkbox"] { width: 18px; height: 18px; }
     </style>
 </head>
 <body>
 
-    <h1>Cronología: Gestión Global</h1>
+    <nav>
+        <h2>Novela OS</h2>
+        <button onclick="cambiarVista('v-eventos')" id="btn-v-eventos" class="active">Línea de Tiempo</button>
+        <button onclick="cambiarVista('v-personajes')" id="btn-v-personajes">Personajes</button>
+        <button onclick="cambiarVista('v-clas')" id="btn-v-clas">Clasificaciones</button>
+    </nav>
 
-    <div class="seccion">
-        <h3>1. Clasificaciones</h3>
-        <input type="text" id="nombreClas" placeholder="Nueva clasificación...">
-        <input type="color" id="colorClas" value="#0079d3" style="width: 100%; height: 40px; border:none; background:none; cursor:pointer;">
-        <button class="btn-azul" onclick="agregarClasificacion()">Añadir Clasificación</button>
-        <div id="verClasificaciones" class="lista-checks"></div>
-    </div>
-
-    <div class="seccion">
-        <h3 id="tituloFormP">2. Personajes</h3>
-        <input type="hidden" id="editIndex" value="-1">
-        <input type="text" id="nombreP" placeholder="Nombre completo">
-        <input type="date" id="fechaP">
-        <div id="checksClasificaciones" class="lista-checks"></div>
-        <div class="lista-checks">
-            <label><input type="radio" name="poderP" value="tiene"> Con Poder</label>
-            <label style="margin-left:15px;"><input type="radio" name="poderP" value="no"> Sin Poder</label>
-            <label style="margin-left:15px;"><input type="radio" name="poderP" value="indefinido" checked> Indefinido</label>
+    <main>
+        <div id="v-eventos" class="vista active">
+            <div class="seccion">
+                <h3>Registrar Evento Histórico</h3>
+                <input type="text" id="nombreE" placeholder="Título del evento">
+                <input type="date" id="fechaE">
+                <textarea id="descE" placeholder="Descripción..."></textarea>
+                
+                <p><strong>Personajes involucrados:</strong></p>
+                <div id="selectorP-Evento" class="selector-personajes"></div>
+                
+                <button class="primary" onclick="agregarEvento()" style="margin-top:15px">Guardar Evento</button>
+            </div>
+            <h3>Crónica del Mundo</h3>
+            <div id="listaEventos"></div>
         </div>
-        <button id="btnGuardarP" onclick="guardarPersonaje()">Guardar Personaje</button>
-        <button id="btnCancelar" style="display:none; margin-top:5px; background:#444;" onclick="cancelarEdicion()">Cancelar</button>
-    </div>
 
-    <div class="seccion">
-        <h3>3. Registrar Evento Histórico</h3>
-        <input type="text" id="nombreE" placeholder="Título del evento (ej: La Gran Batalla)">
-        <label>Fecha del Evento:</label>
-        <input type="date" id="fechaE">
-        <textarea id="descE" placeholder="Descripción breve..."></textarea>
-        <button class="btn-azul" onclick="agregarEvento()">Guardar Evento</button>
-    </div>
+        <div id="v-personajes" class="vista">
+            <div class="seccion">
+                <h3 id="tituloFormP">Registro de Personaje</h3>
+                <input type="hidden" id="editIndex" value="-1">
+                <input type="text" id="nombreP" placeholder="Nombre completo">
+                <input type="date" id="fechaP">
+                <p>Clasificaciones:</p>
+                <div id="checksClasificaciones" class="selector-personajes" style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));"></div>
+                <p>Poder:</p>
+                <div style="display:flex; gap:10px">
+                    <label><input type="radio" name="poderP" value="tiene"> Con Poder</label>
+                    <label><input type="radio" name="poderP" value="no"> Sin Poder</label>
+                    <label><input type="radio" name="poderP" value="indefinido" checked> Indefinido</label>
+                </div>
+                <button class="primary" onclick="guardarPersonaje()" style="margin-top:15px">Guardar Personaje</button>
+            </div>
+            <h3>Lista de Personajes</h3>
+            <div id="listaPersonajes"></div>
+        </div>
 
-    <div class="seccion">
-        <h3>Línea de Tiempo (Eventos)</h3>
-        <div id="listaEventos"></div>
-    </div>
-
-    <div class="seccion">
-        <h3>Lista de Personajes</h3>
-        <div id="listaPersonajes"></div>
-    </div>
+        <div id="v-clas" class="vista">
+            <div class="seccion">
+                <h3>Gestionar Clasificaciones</h3>
+                <input type="text" id="nombreClas" placeholder="Ej: Realeza">
+                <input type="color" id="colorClas" value="#0079d3">
+                <button class="primary" onclick="agregarClasificacion()">Crear Clasificación</button>
+            </div>
+            <div id="verClasificaciones" class="seccion"></div>
+        </div>
+    </main>
 
     <script>
-        window.onload = function() { mostrarClasificaciones(); mostrarPersonajes(); mostrarEventos(); };
+        // --- NAVEGACIÓN ---
+        function cambiarVista(idVista) {
+            document.querySelectorAll('.vista').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById(idVista).classList.add('active');
+            document.getElementById('btn-' + idVista).classList.add('active');
+            if(idVista === 'v-eventos') actualizarSelectorPersonajes();
+        }
+
+        window.onload = function() {
+            mostrarClasificaciones();
+            mostrarPersonajes();
+            mostrarEventos();
+            actualizarSelectorPersonajes();
+        };
 
         // --- CLASIFICACIONES ---
         function agregarClasificacion() {
@@ -88,7 +120,7 @@
             clas.push({ id: Date.now().toString(), nombre, color });
             localStorage.setItem('nt_clas', JSON.stringify(clas));
             document.getElementById('nombreClas').value = "";
-            mostrarClasificaciones(); mostrarPersonajes();
+            mostrarClasificaciones();
         }
 
         function mostrarClasificaciones() {
@@ -97,8 +129,8 @@
             let clas = JSON.parse(localStorage.getItem('nt_clas')) || [];
             divVer.innerHTML = ""; divChecks.innerHTML = "";
             clas.forEach(c => {
-                divVer.innerHTML += `<span><span class="color-circle" style="background:${c.color}; display:inline-block"></span>${c.nombre}</span>`;
-                divChecks.innerHTML += `<label class="clas-check-label"><input type="checkbox" name="clasP" value="${c.id}"><span class="color-circle" style="background:${c.color}"></span>${c.nombre}</label>`;
+                divVer.innerHTML += `<div style="margin-bottom:5px"><span style="display:inline-block; width:12px; height:12px; background:${c.color}; border-radius:50%; margin-right:10px"></span>${c.nombre}</div>`;
+                divChecks.innerHTML += `<label class="check-item"><input type="checkbox" name="clasP" value="${c.id}"> ${c.nombre}</label>`;
             });
         }
 
@@ -107,19 +139,25 @@
             const nombre = document.getElementById('nombreP').value;
             const fecha = document.getElementById('fechaP').value;
             const editIndex = parseInt(document.getElementById('editIndex').value);
-            const checks = document.querySelectorAll('input[name="clasP"]:checked');
             const poder = document.querySelector('input[name="poderP"]:checked').value;
-            if(!nombre || !fecha) return alert("Faltan datos");
+            const clasIds = Array.from(document.querySelectorAll('input[name="clasP"]:checked')).map(cb => cb.value);
 
-            const idsClas = Array.from(checks).map(cb => cb.value.toString()); // Convertir a String siempre
+            if(!nombre || !fecha) return alert("Faltan datos");
             let personajes = JSON.parse(localStorage.getItem('nt_pers')) || [];
-            const pData = { nombre, fecha, clasIds: idsClas, poder };
+            const pData = { nombre, fecha, clasIds, poder };
 
             if(editIndex === -1) personajes.push(pData);
             else personajes[editIndex] = pData;
 
             localStorage.setItem('nt_pers', JSON.stringify(personajes));
-            cancelarEdicion(); mostrarPersonajes();
+            limpiarFormP(); mostrarPersonajes(); actualizarSelectorPersonajes();
+        }
+
+        function limpiarFormP() {
+            document.getElementById('editIndex').value = "-1";
+            document.getElementById('nombreP').value = "";
+            document.getElementById('fechaP').value = "";
+            document.querySelectorAll('input[name="clasP"]').forEach(c => c.checked = false);
         }
 
         function mostrarPersonajes() {
@@ -127,22 +165,17 @@
             let personajes = JSON.parse(localStorage.getItem('nt_pers')) || [];
             let clas = JSON.parse(localStorage.getItem('nt_clas')) || [];
             contenedor.innerHTML = "";
-
             personajes.forEach((p, index) => {
                 let badgesHtml = '<div class="grid-badges">';
                 for(let i=0; i<5; i++) {
-                    const idClas = p.clasIds[i] ? p.clasIds[i].toString() : null; // Solución al problema de IDs grises
-                    const c = clas.find(item => item.id.toString() === idClas);
-                    if(c) badgesHtml += `<span class="badge-fixed" style="background:${c.color}" title="${c.nombre}"></span>`;
-                    else badgesHtml += `<span class="badge-fixed badge-empty"></span>`;
+                    const c = clas.find(item => item.id === p.clasIds[i]);
+                    badgesHtml += `<span class="badge-fixed" style="background:${c ? c.color : 'transparent'}; border:${c?'none':'1px solid #444'}"></span>`;
                 }
                 badgesHtml += '</div>';
-
-                const [y, m, d] = p.fecha.split('-');
-                const colorP = p.poder === 'tiene' ? '#2ecc71' : (p.poder === 'no' ? '#e67e22' : '#ffffff');
-                const labelP = p.poder === 'tiene' ? 'CON PODER' : (p.poder === 'no' ? 'SIN PODER' : 'INDEFINIDO');
-
-                contenedor.innerHTML += `<div class="personaje-item"><div class="info-p">${badgesHtml}<div style="margin-left:10px"><strong>${p.nombre}</strong><br><small style="color:#888">${d}-${m}-${y}</small></div></div><div style="display:flex; align-items:center; gap:20px;"><span class="poder-tag" style="background:${colorP}">${labelP}</span><button class="btn-editar" onclick="editarPersonaje(${index})">Editar</button></div></div>`;
+                const tagCol = p.poder==='tiene'?'#2ecc71':(p.poder==='no'?'#e67e22':'#fff');
+                const tagTxt = p.poder==='tiene'?'CON PODER':(p.poder==='no'?'SIN PODER':'INDEFINIDO');
+                
+                contenedor.innerHTML += `<div class="personaje-item"><div style="display:flex; align-items:center">${badgesHtml} <strong>${p.nombre}</strong></div><div style="display:flex; align-items:center; gap:15px"><span class="poder-tag" style="background:${tagCol}">${tagTxt}</span><button class="btn-editar" onclick="editarPersonaje(${index})">Editar</button></div></div>`;
             });
         }
 
@@ -152,34 +185,31 @@
             document.getElementById('nombreP').value = p.nombre;
             document.getElementById('fechaP').value = p.fecha;
             document.getElementById('editIndex').value = index;
-            document.querySelectorAll('input[name="clasP"]').forEach(cb => cb.checked = p.clasIds.map(id => id.toString()).includes(cb.value));
-            document.querySelector(`input[name="poderP"][value="${p.poder || 'indefinido'}"]`).checked = true;
-            document.getElementById('tituloFormP').innerText = "Editando: " + p.nombre;
-            document.getElementById('btnGuardarP').innerText = "Actualizar";
-            document.getElementById('btnCancelar').style.display = "block";
+            document.querySelectorAll('input[name="clasP"]').forEach(cb => cb.checked = p.clasIds.includes(cb.value));
+            document.querySelector(`input[name="poderP"][value="${p.poder}"]`).checked = true;
+            cambiarVista('v-personajes');
         }
 
-        function cancelarEdicion() {
-            document.getElementById('editIndex').value = "-1";
-            document.getElementById('nombreP').value = ""; document.getElementById('fechaP').value = "";
-            document.getElementById('tituloFormP').innerText = "2. Personajes";
-            document.getElementById('btnGuardarP').innerText = "Guardar Personaje";
-            document.getElementById('btnCancelar').style.display = "none";
-            document.querySelectorAll('input[name="clasP"]').forEach(cb => cb.checked = false);
-            document.querySelector('input[name="poderP"][value="indefinido"]').checked = true;
+        // --- EVENTOS ---
+        function actualizarSelectorPersonajes() {
+            const selector = document.getElementById('selectorP-Evento');
+            let personajes = JSON.parse(localStorage.getItem('nt_pers')) || [];
+            selector.innerHTML = personajes.length ? "" : "Crea personajes primero";
+            personajes.forEach((p, idx) => {
+                selector.innerHTML += `<label class="check-item"><input type="checkbox" name="pEvento" value="${idx}"> ${p.nombre}</label>`;
+            });
         }
 
-        // --- EVENTOS (Lógica de edad automática) ---
         function agregarEvento() {
             const titulo = document.getElementById('nombreE').value;
             const fecha = document.getElementById('fechaE').value;
             const desc = document.getElementById('descE').value;
-            if(!titulo || !fecha) return alert("Faltan datos del evento");
-
+            const pIndices = Array.from(document.querySelectorAll('input[name="pEvento"]:checked')).map(cb => cb.value);
+            
+            if(!titulo || !fecha) return alert("Faltan datos");
             let eventos = JSON.parse(localStorage.getItem('nt_eve')) || [];
-            eventos.push({ titulo, fecha, desc });
-            // Ordenar eventos por fecha automáticamente (Informática pura!)
-            eventos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+            eventos.push({ titulo, fecha, desc, pIndices });
+            eventos.sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
             localStorage.setItem('nt_eve', JSON.stringify(eventos));
             
             document.getElementById('nombreE').value = ""; document.getElementById('fechaE').value = ""; document.getElementById('descE').value = "";
@@ -190,37 +220,30 @@
             const contenedor = document.getElementById('listaEventos');
             let eventos = JSON.parse(localStorage.getItem('nt_eve')) || [];
             let personajes = JSON.parse(localStorage.getItem('nt_pers')) || [];
-            contenedor.innerHTML = eventos.length ? "" : "No hay eventos registrados.";
-
+            contenedor.innerHTML = "";
             eventos.forEach(ev => {
-                const [yE, mE, dE] = ev.fecha.split('-');
-                let edadesHtml = "<div style='font-size:0.85em; margin-top:10px; color:#bbb;'><strong>Edades en este momento:</strong><br>";
-                
-                personajes.forEach(p => {
-                    const edad = calcularEdadEnFecha(p.fecha, ev.fecha);
-                    if(edad >= 0) {
-                        edadesHtml += `• ${p.nombre}: ${edad} años<br>`;
+                let pListHtml = "";
+                ev.pIndices.forEach(idx => {
+                    const p = personajes[idx];
+                    if(p) {
+                        const edad = calcularEdadEnFecha(p.fecha, ev.fecha);
+                        pListHtml += `<li>${p.nombre} (Edad: ${edad < 0 ? 'No nacido' : edad + ' años'})</li>`;
                     }
                 });
-                edadesHtml += "</div>";
-
-                contenedor.innerHTML += `
-                    <div class="seccion" style="background:#1a1a1b">
-                        <strong style="color:#0079d3; font-size:1.2rem;">${dE}-${mE}-${yE} | ${ev.titulo}</strong>
-                        <p style="margin:5px 0; color:#ddd">${ev.desc}</p>
-                        ${edadesHtml}
-                    </div>`;
+                const [y, m, d] = ev.fecha.split('-');
+                contenedor.innerHTML += `<div class="seccion" style="background:#1a1a1b">
+                    <h4 style="color:var(--accent); margin:0">${d}-${m}-${y} | ${ev.titulo}</h4>
+                    <p style="color:#aaa">${ev.desc}</p>
+                    <ul style="font-size:0.9rem; color:#ddd">${pListHtml}</ul>
+                </div>`;
             });
         }
 
-        function calcularEdadEnFecha(nacimiento, evento) {
-            const nac = new Date(nacimiento);
-            const eve = new Date(evento);
-            let edad = eve.getFullYear() - nac.getFullYear();
-            const m = eve.getMonth() - nac.getMonth();
-            if (m < 0 || (m === 0 && eve.getDate() < nac.getDate())) {
-                edad--;
-            }
+        function calcularEdadEnFecha(nac, eve) {
+            const n = new Date(nac); const e = new Date(eve);
+            let edad = e.getFullYear() - n.getFullYear();
+            const m = e.getMonth() - n.getMonth();
+            if (m < 0 || (m === 0 && e.getDate() < n.getDate())) edad--;
             return edad;
         }
     </script>
